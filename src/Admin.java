@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /* Created by Petar Sunaric */
@@ -67,7 +66,7 @@ public class Admin {
 			System.out.println("Unesite novu sobu: ");
 			int soba = 0;
 			do {
-				soba = checkInput(1);
+				soba = Hotel.checkInput(1);
 			} while (izdata(soba));
 
 			PreparedStatement statement = con.prepareStatement(
@@ -95,9 +94,10 @@ public class Admin {
 
 	/**
 	 * izdaje racun sa svim koristenim uslugama, njihovim cijenama i ukupnom
-	 * cijenom
+	 * cijenom na zadato korisnicko ime gosta
 	 */
 	public void izdajRacun(String ime) throws Exception {
+		if(korisnickoPostoji(ime)){
 		int racun = 0;// ukupan racun
 		try {
 			Connection con = Hotel.getConnection();
@@ -116,7 +116,7 @@ public class Admin {
 
 			System.out.println("Goste ste prijavio: " + datum);
 			System.out.print("Koliko je dana gost bio? ");
-			int danaBoravio = checkInput(0);
+			int danaBoravio = Hotel.checkInput(0);
 			System.out.println("RACUN: ");
 			System.out.println("--------------------------");
 			racun += danaBoravio * naplatiSobu(brojSobe);
@@ -155,6 +155,9 @@ public class Admin {
 		} catch (Exception e) {
 			System.out.println(e);
 		}
+		}else{
+			System.out.println("Pogresan unos!");
+		}
 	}
 
 	/* odredjuje cijenu sobe */
@@ -184,7 +187,7 @@ public class Admin {
 		String brojLicne = input.next();
 		if (daLiPostojiKorisnik(brojLicne)) {
 			System.out.print("Unesite broj sobe: ");
-			int brojSobe = checkInput(1);
+			int brojSobe = Hotel.checkInput(1);
 			insertSobe(brojSobe);
 		} else {
 
@@ -198,12 +201,12 @@ public class Admin {
 			String pol = input.next().toUpperCase();
 
 			System.out.print("Unesite godine: ");
-			int godine = checkInput(0);
+			int godine = Hotel.checkInput(0);
 
 			System.out.print("Unesite broj sobe: ");
 			int brojSobe = 0;
 			do {
-				brojSobe = checkInput(1);
+				brojSobe = Hotel.checkInput(1);
 			} while (izdata(brojSobe));
 
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
@@ -303,14 +306,14 @@ public class Admin {
 		return null;
 	}
 
-	/** provjerava da li je korisnik vec bio u hotelu */
+	/* provjerava da li je korisnik vec bio u hotelu */
 	public boolean daLiPostojiKorisnik(String brojLicne) throws Exception {
 		if (brojLicne.equals(getStariBroj(brojLicne)))
 			return true;
 		return false;
 	}
 
-	/** vraca broj licne ako je gost vec bio u hotelu u suprotnom vraca null */
+	/* vraca broj licne ako je gost vec bio u hotelu u suprotnom vraca null */
 	public String getStariBroj(String brojLicne) throws Exception {
 		try {
 			Connection con = Hotel.getConnection();
@@ -324,27 +327,5 @@ public class Admin {
 		return null;
 	}
 
-	/* provjerava input za godine i broj sobe */
-	public int checkInput(int call) {
-
-		int num = 0;
-		boolean error = true; // check for error
-
-		do {
-			try {
-				num = input.nextInt();
-				if (num < 1)
-					throw new InputMismatchException("Can not be less than zero, try again: ");
-				else if (num > 50 && call == 1)
-					throw new InputMismatchException("Can not be larger than 50, try again: ");
-				// if input is correct stops loop
-				error = false;
-			} catch (InputMismatchException e) {
-				e.printStackTrace();
-				input.nextLine();
-			}
-		} while (error);
-
-		return num;
-	}
+	
 }
